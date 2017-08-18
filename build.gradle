@@ -1,5 +1,5 @@
 group = "com.logpig.mweagle"
-version = "0.0.2-SNAPSHOT"
+version = "1.1.0-SNAPSHOT"
 
 buildscript {
     repositories {
