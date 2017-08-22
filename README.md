@@ -20,10 +20,8 @@ To use the custom appender, in your __logback.xml__ file use the following class
 * timeBasedFileNamingAndTriggeringPolicy
    * class = [ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP](http://logback.qos.ch/apidocs/ch/qos/logback/core/rolling/SizeAndTimeBasedFNATP.html)
 
-and add the three required properties as children of the &lt;appender&gt; element:
+and add the following required property as a child of the &lt;appender&gt; element:
 
-* accessKey - your S3 access key
-* secretKey - your S3 secret key
 * bucketName - the bucketName into which the rolled over log files will be posted
 
 The appender does not set object expiration policies on the log file bucket.  You should manage expiration policies in the AWS management console.
@@ -118,3 +116,8 @@ To build the Javadocs:
 * mvn javadoc:javadoc
 * open target/site/apidocs/index.html 
 
+To run in your development environment, set the following three environment variables (in the AWS environment these are 
+derives from the host instance's role):
+AWS_ACCESS_KEY
+AWS_SECRET_KEY
+AWS_REGION
