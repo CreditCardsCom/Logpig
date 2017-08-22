@@ -54,7 +54,7 @@ public class S3FilePutRunnable implements Runnable
 
 	/**
 	 * Ctor
-	 * 
+	 *
 	 * @param filePath
 	 *            Path to local file to post
 	 * @param s3Settings
@@ -72,16 +72,31 @@ public class S3FilePutRunnable implements Runnable
 		boolean createBucket = false;
 		boolean doExit = false;
 		int attempt = 0;
-		AWSCredentialsProvider credentialsProvider = new EnvironmentVariableCredentialsProvider();
+		AWSCredentialsProvider credentialsProvider = InstanceProfileCredentialsProvider.getInstance();
 
-		if (credentialsProvider.getCredentials() == null
-				|| credentialsProvider.getCredentials().getAWSAccessKeyId() == null
-				|| credentialsProvider.getCredentials().getAWSSecretKey() == null) {
+		try {
+			if (credentialsProvider == null || credentialsProvider.getCredentials() == null
+					|| credentialsProvider.getCredentials().getAWSAccessKeyId() == null
+					|| credentialsProvider.getCredentials().getAWSSecretKey() == null) {
 
-			credentialsProvider = InstanceProfileCredentialsProvider.getInstance();
+				logger.warn("Warning - unable to load AWS credentials from instance");
+				credentialsProvider = new EnvironmentVariableCredentialsProvider();
+			}
+		}
+		catch (AmazonClientException e) {
+			logger.warn("Warning - unable to load AWS credentials from instance");
+			credentialsProvider = new EnvironmentVariableCredentialsProvider();
 		}
 
-		final AmazonS3 s3 = AmazonS3ClientBuilder.standard().withCredentials(credentialsProvider).withRegion(Regions.US_WEST_1).build();
+		AmazonS3 s3 = null;
+
+		try {
+			s3 = AmazonS3ClientBuilder.standard().withCredentials(credentialsProvider).build();
+		}
+		catch (AmazonClientException e) {
+			logger.error("An error occurred creating the S3 client for logging", e);
+			return;
+		}
 
 		while (!doExit && attempt != this.s3Settings.retryCount)
 		{
