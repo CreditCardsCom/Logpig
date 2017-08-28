@@ -72,26 +72,11 @@ public class S3FilePutRunnable implements Runnable
 		boolean createBucket = false;
 		boolean doExit = false;
 		int attempt = 0;
-		AWSCredentialsProvider credentialsProvider = InstanceProfileCredentialsProvider.getInstance();
-
-		try {
-			if (credentialsProvider == null || credentialsProvider.getCredentials() == null
-					|| credentialsProvider.getCredentials().getAWSAccessKeyId() == null
-					|| credentialsProvider.getCredentials().getAWSSecretKey() == null) {
-
-				logger.warn("Warning - unable to load AWS credentials from instance");
-				credentialsProvider = new EnvironmentVariableCredentialsProvider();
-			}
-		}
-		catch (AmazonClientException e) {
-			logger.warn("Warning - unable to load AWS credentials from instance");
-			credentialsProvider = new EnvironmentVariableCredentialsProvider();
-		}
 
 		AmazonS3 s3 = null;
 
 		try {
-			s3 = AmazonS3ClientBuilder.standard().withCredentials(credentialsProvider).build();
+			s3 = AmazonS3ClientBuilder.standard().build();
 		}
 		catch (AmazonClientException e) {
 			logger.error("An error occurred creating the S3 client for logging", e);
