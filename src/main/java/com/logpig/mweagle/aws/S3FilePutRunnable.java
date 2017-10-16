@@ -20,6 +20,8 @@ import java.net.HttpURLConnection;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.amazonaws.auth.AWSCredentialsProvider;
 import org.slf4j.Logger;
@@ -51,6 +53,8 @@ public class S3FilePutRunnable implements Runnable
 	private final S3Settings s3Settings;
 	
 	private static final DateTimeFormatter yyyyMMddFormat = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+	
+	private static final Pattern pattern = Pattern.compile("(\\d{4}-\\d{1,2}-\\d{1,2})");
 
 	/**
 	 * Ctor
@@ -93,9 +97,32 @@ public class S3FilePutRunnable implements Runnable
 					{
 						s3.createBucket(this.s3Settings.bucketName, this.s3Settings.regionName);
 					}
+					
 					final File logfile = new File(this.filePath);
 					
-					String s3Location = s3Settings.folderName + File.separator + yyyyMMddFormat.format(OffsetDateTime.now(ZoneId.of("UTC"))) + File.separator+ logfile.getName();
+					/**
+					 * Check to see if the log file is going to the right folder.  Due to how LogBack works, the rollover is 
+					 * triggered by incoming log event and log file can potentially go to wrong folder (previous day) if the new log
+					 * event arrives on next day. 
+					 */
+					String destinationFolderName = yyyyMMddFormat.format(OffsetDateTime.now(ZoneId.of("UTC")));
+					String logFileName = logfile.getName();
+					Matcher matcher = pattern.matcher(logFileName);
+					
+					if (matcher.find()) {
+					    String dateStringFromLogFile = matcher.group(1);
+					    
+					    /*
+					     * Date string extracted from log file name such as this 8117dbcc2c4f.wby-res-cardmatch.2017-10-09-19.log
+					     * will have 2017-10-09 extracted and converted to 2017/10/09
+					     * to compare with destinationFolderName with format of yyyy/MM/dd to make sure log file goes to right folder.
+					     */
+					    dateStringFromLogFile = dateStringFromLogFile.replaceAll("-", "/");
+					    if (!dateStringFromLogFile.equals(destinationFolderName))
+					    		destinationFolderName = dateStringFromLogFile;
+					}
+					
+					String s3Location = s3Settings.folderName + File.separator + destinationFolderName + File.separator+ logfile.getName();
 					final PutObjectRequest request = new PutObjectRequest(this.s3Settings.bucketName, s3Location, logfile);
 					s3.putObject(request);
 				}
