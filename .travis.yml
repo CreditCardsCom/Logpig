@@ -19,13 +19,13 @@ cache:
 deploy:
   # deploy to snapshot location
   - provider: script
-    script: "./gradlew artifactoryPublish"
+    script: "./gradlew snapshot"
     skip_cleanup: true
     on:
       branch: develop
   # TODO deploy to release location, right now release and snapshot are one in the same
   - provider: script
-    script: "./gradlew artifactoryPublish"
+    script: "./gradlew candidate"
     skip_cleanup: true
     on:
       branch: master
