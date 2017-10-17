@@ -1,5 +1,4 @@
 group = "com.logpig.mweagle"
-version = "2.0.0-SNAPSHOT"
 
 buildscript {
     repositories {
@@ -8,14 +7,17 @@ buildscript {
     }
 
     dependencies {
-        classpath('org.jfrog.buildinfo:build-info-extractor-gradle:4.4.9')
+        classpath 'org.jfrog.buildinfo:build-info-extractor-gradle:4.4.9'
+        classpath 'com.netflix.nebula:nebula-release-plugin:6.0.2'
     }
 }
 
 apply plugin: 'java'
 apply plugin: 'idea'
+apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.artifactory'
+apply plugin: 'nebula.nebula-release'
 
 def artifactory_user = hasProperty('ARTIFACTORY_USER') ? ARTIFACTORY_USER : System.getenv('ARTIFACTORY_USER')
 def artifactory_key = hasProperty('ARTIFACTORY_KEY') ? ARTIFACTORY_KEY : System.getenv('ARTIFACTORY_KEY')
